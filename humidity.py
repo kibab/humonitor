@@ -4,7 +4,7 @@ import Adafruit_BMP.BMP085 as BMP085
 from prometheus_client import start_http_server, Summary, Gauge
 
 DHT_SENSOR = Adafruit_DHT.DHT22
-DHT_PIN = 7
+DHT_PIN = 4
 baro_sensor = BMP085.BMP085(busnum=1)
 hum_metric = Gauge('humidity', 'Current humidity')
 pressure_metric = Gauge('pressure', 'Current pressure')
@@ -12,8 +12,16 @@ temp_metric = Gauge('temperature', 'Current temperature')
 
 def do_work():
     humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
+    if humidity == None:
+       print("cannot read humidity")
+       return
+    if humidity > 100:
+       print("Abnormal value for humidity")
+       return
     hum_metric.set(humidity)
     pressure = baro_sensor.read_pressure()
+    if pressure == None:
+       return
     pressure_metric.set(pressure)
     alt = baro_sensor.read_altitude()
     baro_temp = baro_sensor.read_temperature()
